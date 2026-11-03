@@ -954,8 +954,14 @@ EOF2
      ! grep -qi '^kbdinteractiveauthentication no$' <<< "$effective" || \
      ! grep -qi '^pubkeyauthentication yes$' <<< "$effective" || \
      ! grep -qi '^authenticationmethods publickey$' <<< "$effective" || \
-     ! grep -qE "^allowusers .*([[:space:]]|^)${NEW_USER}([[:space:]]|$)" <<< "$effective"; then
-    restore_ssh_state
+     ! awk -v u="$NEW_USER" '
+       tolower($1) == "allowusers" {
+         for (i = 2; i <= NF; i++) {
+           if ($i == u) found = 1
+         }
+       }
+       END { exit !found }
+     ' <<< "$effective"    restore_ssh_state
     die 'Эффективные SSH-настройки не соответствуют ожиданиям; исходные файлы восстановлены'
   fi
   local authorized_keys_file
