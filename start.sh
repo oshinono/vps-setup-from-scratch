@@ -961,7 +961,8 @@ EOF2
          }
        }
        END { exit !found }
-     ' <<< "$effective"    restore_ssh_state
+     ' <<< "$effective"; then
+    restore_ssh_state
     die 'Эффективные SSH-настройки не соответствуют ожиданиям; исходные файлы восстановлены'
   fi
   local authorized_keys_file
