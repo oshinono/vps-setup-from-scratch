@@ -568,6 +568,7 @@ do_rollback() {
       if [[ " $saved_groups " != *" sudo "* ]]; then gpasswd -d "$saved_user" sudo >/dev/null 2>&1 || true; fi
     fi
   fi
+  install -d -m 0755 -o root -g root /run/sshd 2>/dev/null || true
   if command -v sshd >/dev/null 2>&1 && ! sshd -t; then warn 'После отката sshd -t не прошёл; проверьте SSH вручную'; fi
   if command -v ufw >/dev/null 2>&1 && [[ -f /etc/ufw/ufw.conf ]]; then
     if grep -q '^ENABLED=yes' /etc/ufw/ufw.conf; then ufw --force enable >/dev/null 2>&1 || ufw reload || true
@@ -868,6 +869,7 @@ step_ssh() {
   [[ "$user_shell" != /usr/sbin/nologin && "$user_shell" != /sbin/nologin && "$user_shell" != /bin/false ]] || die "У $NEW_USER отключён shell: $user_shell"
   [[ -s "$home/.ssh/authorized_keys" ]] || die 'У нового пользователя отсутствует authorized_keys'
   install -d -m 0755 /etc/ssh/sshd_config.d
+  install -d -m 0755 -o root -g root /run/sshd
 
   restore_ssh_state() {
     restore_path_from_backup "$BK" "$cfg"
