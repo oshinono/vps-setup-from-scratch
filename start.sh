@@ -1017,7 +1017,13 @@ JAIL
   fail2ban-client -t
   systemctl enable --now fail2ban
   systemctl restart fail2ban
-  fail2ban-client status sshd >/dev/null 2>&1 || die 'Fail2ban запущен, но jail sshd не активен; проверьте jail.local и jail.d'
+  local i
+  for i in {1..15}; do
+    fail2ban-client status sshd >/dev/null 2>&1 && return 0
+    sleep 1
+  done
+  journalctl -u fail2ban -n 30 --no-pager || true
+  die 'Fail2ban запущен, но jail sshd не активен; проверьте jail.local и jail.d'
 }
 
 step_sysctl() {
